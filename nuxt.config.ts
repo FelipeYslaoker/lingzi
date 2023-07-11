@@ -4,6 +4,11 @@ import { md3 } from 'vuetify/blueprints'
 export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: true,
+  runtimeConfig: {
+    public: {
+      lingziApiBaseUrl: process.env.LINGZI_API_BASE_URL
+    }
+  },
   imports: {
     dirs: ['stores']
   },
@@ -18,8 +23,8 @@ export default defineNuxtConfig({
   ],
   eslint: {},
   http: {
-    baseURL: 'http://localhost:4000',
-    browserBaseURL: 'http://localhost:4000'
+    baseURL: process.env.LINGZI_API_BASE_URL || 'http://localhost:4000',
+    browserBaseURL: process.env.LINGZI_API_BASE_URL || 'http://localhost:4000'
   },
   auth: {
     strategies: {
