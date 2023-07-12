@@ -2,7 +2,7 @@
   <div>
     <lingzi-card
       :title="loading ? 'Saving card...' : 'Add card'"
-      width="80vw"
+      max-width="80vw"
       max-height="60vh"
       overflow-y
       :justify="loading ? 'center' : ''"

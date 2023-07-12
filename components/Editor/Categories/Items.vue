@@ -11,7 +11,7 @@
             {{ expand ? 'Ver menos' : 'Expandir' }}
           </v-btn>
           <v-expand-x-transition>
-            <v-sheet v-if="!expand" class="text-h6 overflow-y-hidden" width="80%" height="40px">
+            <v-sheet v-if="!expand" class="text-h6 overflow-y-hidden" max-width="80%" height="40px">
               <div>
                 {{ category?.name || (category?.id?.includes('subcategory') ? 'Subcategory ' : 'Category ') + (index + 1) }}
               </div>
@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { LingziLanguageEditingCategory, LingziEditingLanguage } from '@/@types/Lingzi/Language'
+import { LingziLanguageEditingCategory, LingziEditingLanguage } from '@/types/Lingzi/Language'
 
 const props = defineProps({
   id: {
