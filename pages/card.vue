@@ -1,75 +1,90 @@
 <template>
   <div>
-    <div v-if="loading">
-      <lingzi-loading />
-    </div>
     <v-expand-transition>
       <div v-if="screen === 'informations' && !loading">
-        <lingzi-card
-          v-if="!nextCard?.id"
-          display="flex"
-          flex-direction="column"
-          justify="center"
-          align="center"
-          title="Cards"
-          width="500px"
-        >
-          <v-icon color="primary" size="70">
-            mdi-check-circle
-          </v-icon>
-          <div class="text-h5">
-            All done
-          </div>
-          <template #actions>
-            <v-btn flat class="text-none" @click="useRouter().push('/categories?language=' + useRoute().query.language)">
-              Back
-            </v-btn>
-          </template>
-        </lingzi-card>
-        <div v-else>
-          <lingzi-card
-            title="Cards"
-            display="flex"
-            flex-direction="column"
-            justify="center"
-            align="center"
-            width="500px"
-          >
-            <v-icon color="primary" size="70">
-              mdi-book
-            </v-icon>
-            <div class="text-h5">
-              You have cards to study
-            </div>
-            <template #actions>
-              <v-btn flat class="text-none ma-1" color="red" @click="useRouter().push('/categories?language=' + useRoute().query.language)">
-                Back
-              </v-btn>
-              <v-btn flat class="text-none ma-1" @click="screenToShow = 'card'">
-                Study
-              </v-btn>
-            </template>
-          </lingzi-card>
-        </div>
+        <lingzi-centralizer v-if="!nextCard?.id" width="100vw" height="100vh" class="px-3">
+          <v-row v-if="!nextCard?.id" justify="center">
+            <v-col cols="12" sm="8" md="6" lg="4">
+              <lingzi-card
+                display="flex"
+                flex-direction="column"
+                justify="center"
+                align="center"
+                title="Cards"
+              >
+                <v-icon color="primary" size="70">
+                  mdi-check-circle
+                </v-icon>
+                <div class="text-h5">
+                  All done
+                </div>
+                <template #actions>
+                  <v-btn flat class="text-none" @click="useRouter().push('/categories?language=' + useRoute().query.language)">
+                    Back
+                  </v-btn>
+                </template>
+              </lingzi-card>
+            </v-col>
+          </v-row>
+        </lingzi-centralizer>
+        <lingzi-centralizer v-else width="100vw" height="100vh" class="px-3">
+          <v-row justify="center">
+            <v-col cols="12" sm="8" md="6" lg="4">
+              <div>
+                <lingzi-card
+                  title="Cards"
+                  display="flex"
+                  flex-direction="column"
+                  justify="center"
+                  align="center"
+                >
+                  <v-icon color="primary" size="70">
+                    mdi-book
+                  </v-icon>
+                  <div class="text-h5 text-center">
+                    You have cards to study
+                  </div>
+                  <template #actions>
+                    <v-btn flat class="text-none ma-1" color="red" @click="useRouter().push('/categories?language=' + useRoute().query.language)">
+                      Back
+                    </v-btn>
+                    <v-btn flat class="text-none ma-1" @click="screenToShow = 'card'">
+                      Study
+                    </v-btn>
+                  </template>
+                </lingzi-card>
+              </div>
+            </v-col>
+          </v-row>
+        </lingzi-centralizer>
       </div>
     </v-expand-transition>
     <v-expand-transition>
-      <div v-if="screen === 'card' && !loading">
-        <lingzi-card width="500px" title="Card">
-          <item-card :card="nextCard" />
-          <template #actions>
-            <v-btn flat class="text-none ma-1" color="red" @click="screenToShow = 'informations'">
-              Back
-            </v-btn>
-          </template>
-        </lingzi-card>
-      </div>
+      <lingzi-centralizer v-if="screen === 'card' && !loading" width="100vw" height="100vh">
+        <v-row justify="center">
+          <v-col cols="12" sm="8" md="6" lg="4">
+            <lingzi-card title="Card" class="mx-4">
+              <item-card :card="nextCard" />
+              <template #actions>
+                <v-btn flat class="text-none ma-1" color="red" @click="screenToShow = 'informations'">
+                  Back
+                </v-btn>
+              </template>
+            </lingzi-card>
+          </v-col>
+        </v-row>
+      </lingzi-centralizer>
     </v-expand-transition>
   </div>
 </template>
 
 <script setup lang="ts">
-const loading = ref(true)
+const loading = computed(() => {
+  if (typeof useGlobalDialogStore().loadingDialog.show === 'undefined') {
+    return true
+  }
+  return useGlobalDialogStore().loadingDialog.show
+})
 
 const cards = computed(() => {
   return useCardsStore().items
@@ -88,7 +103,10 @@ const category = ref(useRoute().query.category?.toString())
 const language = ref(useRoute().query.language?.toString())
 
 onMounted(async () => {
-  loading.value = true
+  useGlobalDialogStore().loading({
+    title: 'Loading cards',
+    cancelable: true
+  })
   try {
     await useLingzi().languages.get()
     if (language && category) {
@@ -99,22 +117,10 @@ onMounted(async () => {
     // TODO catch error
     console.log(e)
   }
-  loading.value = false
+  useGlobalDialogStore().loading()
 })
 
 const nextCard = computed(() => {
-  const cardsFiltered = cards.value.filter((card) => {
-    if (card.language !== language.value) {
-      return false
-    }
-    if (card.interval === 1 || (card.consecutiveResponses || 0 > 0)) {
-      return true
-    }
-    const intervalInMilliseconds = (card.interval || 1) * 60 * 1000
-    const reviewdAtDate = new Date(card.reviewedAt || Date.now())
-    const nextReviewTimestamp = reviewdAtDate.getTime() + intervalInMilliseconds
-    return nextReviewTimestamp <= Date.now()
-  })
-  return useShuffleArray(cardsFiltered)[0]
+  return useShuffleArray(cards.value)[0]
 })
 </script>
