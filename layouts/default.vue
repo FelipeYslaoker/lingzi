@@ -1,14 +1,9 @@
 <template>
   <v-layout class="rounded rounded-md">
     <v-main>
-      <v-sheet
-        class="d-flex justify-center align-center"
-        height="100vh"
-        width="100vw"
-        color="transparent"
-      >
-        <slot />
-      </v-sheet>
+      <slot />
+      <global-dialog />
+      <lingzi-loading-dialog />
     </v-main>
   </v-layout>
 </template>
